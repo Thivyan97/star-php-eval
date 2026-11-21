@@ -2,31 +2,37 @@
 
 @section('title', 'Latest News')
 
-@section('content')
-    <h1 class="h3 mb-3">Latest News</h1>
+@section('header-search')
+    <input type="search" id="search" class="form-control form-control-sm" placeholder="Search by title...">
+@endsection
 
-    <div class="row g-2 mb-4">
-        <div class="col-md-8">
-            <input type="search" id="search" class="form-control" placeholder="Search articles by title...">
-        </div>
-        <div class="col-md-4">
-            <select id="category" class="form-select">
-                <option value="">All categories</option>
-                @foreach ($categories as $category)
-                    <option value="{{ $category->name }}">{{ $category->name }}</option>
-                @endforeach
-            </select>
-        </div>
+@section('content')
+    <div class="mb-3">
+        <h1 class="h3 fw-bold mb-1">Latest News</h1>
+        <p class="text-muted mb-0">Headlines from around Malaysia</p>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="article-list">
+    <div class="d-flex flex-wrap gap-2 mb-4" id="category-pills">
+        <button type="button" class="btn btn-sm btn-dark" data-category="">All</button>
+        @foreach ($categories as $category)
+            <button type="button" class="btn btn-sm btn-outline-dark" data-category="{{ $category->name }}">
+                {{ $category->name }}
+            </button>
+        @endforeach
+    </div>
+
+    <div class="row g-4">
         @foreach ($articles as $article)
-            <div class="col article-item"
+            @php $color = $article->category->color; @endphp
+            <div class="col-12 col-md-6 col-lg-4 article-item"
                  data-title="{{ \Illuminate\Support\Str::lower($article->title) }}"
                  data-category="{{ $article->category->name }}">
-                <div class="card h-100 shadow-sm">
+                <div class="card h-100 border-0 shadow-sm article-card bg-white"
+                     style="border-top: 4px solid var(--bs-{{ $color }}) !important;">
                     <div class="card-body d-flex flex-column">
-                        <span class="badge text-bg-primary align-self-start mb-2">{{ $article->category->name }}</span>
+                        <div class="mb-2">
+                            <span class="badge text-bg-{{ $color }}">{{ $article->category->name }}</span>
+                        </div>
                         <h2 class="h5 card-title">
                             <a href="{{ route('articles.show', $article) }}" class="text-decoration-none text-dark stretched-link">
                                 {{ $article->title }}
@@ -35,7 +41,9 @@
                         <p class="card-text text-muted">{{ $article->summary }}</p>
                         <p class="card-text mt-auto mb-0">
                             <small class="text-muted">
-                                {{ $article->author }} &middot; {{ $article->published_at?->format('d M Y') }}
+                                {{ $article->author }}
+                                &middot; {{ $article->published_at?->diffForHumans() }}
+                                &middot; {{ $article->reading_time }} min read
                             </small>
                         </p>
                     </div>
@@ -50,18 +58,18 @@
 @push('scripts')
 <script>
     const searchInput = document.getElementById('search');
-    const categorySelect = document.getElementById('category');
+    const pills = document.querySelectorAll('#category-pills button');
     const items = document.querySelectorAll('.article-item');
     const noResults = document.getElementById('no-results');
+    let selectedCategory = '';
 
     function filterArticles() {
         const query = searchInput.value.toLowerCase().trim();
-        const category = categorySelect.value;
         let visible = 0;
 
         items.forEach(item => {
             const matchesTitle = item.dataset.title.includes(query);
-            const matchesCategory = !category || item.dataset.category === category;
+            const matchesCategory = !selectedCategory || item.dataset.category === selectedCategory;
             const show = matchesTitle && matchesCategory;
             item.classList.toggle('d-none', !show);
             if (show) visible++;
@@ -70,7 +78,18 @@
         noResults.classList.toggle('d-none', visible > 0);
     }
 
+    pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+            selectedCategory = pill.dataset.category;
+            pills.forEach(p => {
+                const active = p === pill;
+                p.classList.toggle('btn-dark', active);
+                p.classList.toggle('btn-outline-dark', !active);
+            });
+            filterArticles();
+        });
+    });
+
     searchInput.addEventListener('input', filterArticles);
-    categorySelect.addEventListener('change', filterArticles);
 </script>
 @endpush

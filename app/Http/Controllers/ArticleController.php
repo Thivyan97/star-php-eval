@@ -27,6 +27,14 @@ class ArticleController extends Controller
 
         $article->load('category');
 
-        return view('articles.show', compact('article'));
+        $related = Article::with('category')
+            ->published()
+            ->where('category_id', $article->category_id)
+            ->whereKeyNot($article->getKey())
+            ->latest('published_at')
+            ->take(3)
+            ->get();
+
+        return view('articles.show', compact('article', 'related'));
     }
 }

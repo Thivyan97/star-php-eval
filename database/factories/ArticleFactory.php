@@ -41,7 +41,10 @@ class ArticleFactory extends Factory
             'published_at' => fake()->dateTimeBetween('-3 months', 'now'),
             'permalink' => Str::slug($title).'-'.fake()->unique()->numerify('####'),
             'category_id' => Category::factory(),
-            'author' => fake()->name(),
+            'author' => fake()->randomElement([
+                'Aisyah Rahman', 'Tan Wei Jie', 'Kavitha Nair', 'Farid Hassan',
+                'Nurul Izzati', 'Lee Mei Ling', 'Hafiz Ismail', 'Priya Menon',
+            ]),
             'status' => 'published',
         ];
     }
