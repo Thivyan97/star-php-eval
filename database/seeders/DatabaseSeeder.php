@@ -2,24 +2,23 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Article;
+use App\Models\Category;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $categories = collect([
+            'Politics', 'Business', 'Sports',
+            'Technology', 'Entertainment', 'Lifestyle',
+        ])->map(fn (string $name) => Category::create(['name' => $name]));
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // 20 published articles spread across the categories
+        Article::factory(20)->recycle($categories)->create();
+
+        // A few drafts, which the public list will hide
+        Article::factory(3)->draft()->recycle($categories)->create();
     }
 }
