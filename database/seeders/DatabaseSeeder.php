@@ -27,7 +27,10 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // A few drafts and hides from public
+        // Additional articles generated entirely by ArticleFactory (Faker)
+        Article::factory(6)->recycle($categories->values())->create();
+
+        // A few drafts built entirely by the factory and the public pages hide them
         Article::factory(2)->draft()->recycle($categories->values())->create();
     }
 
